@@ -82,19 +82,29 @@ class Lexer {
   void getNumber() {
     int r = 0;
     int c = _codeUnit(_pos++);
+    int divisor = 0;
     while (true) {
       r *= 10;
       r += c - $0;
+      divisor *= 10;
       if (_pos == _program.length) {
-        current = r;
+        current = r / (divisor == 0 ? 1 : divisor);
         return;
       }
-      c = _codeUnit(_pos);
-      if (c < $0 || c > $9) {
-        current = r;
-        return;
+      bool again = true;
+      while (again) {
+        c = _codeUnit(_pos);
+        if (c < $0 || c > $9) {
+          if (c != $dot || divisor != 0) {
+            current = r / (divisor == 0 ? 1 : divisor);
+            return;
+          }
+          divisor = 1;
+        } else {
+          again = false;
+        }
+        _pos++;
       }
-      _pos++;
     }
   }
 

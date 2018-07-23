@@ -11,6 +11,8 @@ main() {
   demo("I ain't talkin' 'bout love", ["I", "is not", "talkin'", "'bout", "love"]);
 
   demo("Put 123 into X", ["put", 123, "into", "X"]);
+  demo("Put 3.1415 into X", ["put", 3.1415, "into", "X"]);
+  demo("Put 3. into X", ["put", 3, "into", "X"]);
   demo('Put "Hello World" into the message', ["put", '"', "Hello World", "into", "the message"]);
 
   demo("Build my world up", ["build", "my world", "up"]);
