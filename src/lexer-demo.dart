@@ -44,7 +44,19 @@ main() {
   demo("Multiply takes X and Y", ["Multiply", "takes", "X", "and", "Y"]);
   demo("Search takes Needle and Haystack", ["Search", "takes", "Needle", "and", "Haystack"]);
 
+  demo("Tommy was 14487.   (Initializes Tommy with 14487)", ["Tommy", "is", 14487]);
+
+  demo("Continue\n    (blank like ending 'If' Block)\nIf Modulus taking Counter and Fizz is 0",
+       ["continue", "\n", "if", "Modulus", "taking", "Counter", "and", "Fizz", "is", 0]);
+
   demo("I love you (and that's the truth), but I'm gonna leave you", ["I", "love", "you", "but", "I'm", "gonna", "leave", "you"]);
+
+  demo("Line\nline", ["Line", "line"]);
+  demo("Line\n\nline", ["Line", "\n", "line"]);
+  demo("Line\n   \n  line", ["Line", "\n", "line"]);
+  demo("Line\n   (comment on blank line)\n  line", ["Line", "\n", "line"]);
+  // Multiple blank lines lex as one blank line.
+  demo("Line\n   (comment on blank line)\n\n\n  line", ["Line", "\n", "line"]);
 }
 
 demo(String program, List tokens) {

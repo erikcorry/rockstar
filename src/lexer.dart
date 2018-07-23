@@ -35,8 +35,14 @@ class Lexer {
 
   void get() {
     bool whitespace = true;
+    bool seen_newline = false;
+    bool seen_blank_line = false;
     while (whitespace && _pos < _program.length) {
       int c = _codeUnit(_pos);
+      if (c == $lf) {
+        if (seen_newline) seen_blank_line = true;
+        seen_newline = true;
+      }
       if (c == $open_parenthesis) {
         _pos++;
         // Comment.
@@ -50,6 +56,10 @@ class Lexer {
       } else {
         _pos++;
       }
+    }
+    if (seen_blank_line) {
+      current = "\n";  // Blank line.
+      return;
     }
     if (_pos == _program.length) {
       current = null;
