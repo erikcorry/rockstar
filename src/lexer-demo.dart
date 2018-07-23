@@ -43,6 +43,8 @@ main() {
 
   demo("Multiply takes X and Y", ["Multiply", "takes", "X", "and", "Y"]);
   demo("Search takes Needle and Haystack", ["Search", "takes", "Needle", "and", "Haystack"]);
+
+  demo("I love you (and that's the truth), but I'm gonna leave you", ["I", "love", "you", "but", "I'm", "gonna", "leave", "you"]);
 }
 
 demo(String program, List tokens) {

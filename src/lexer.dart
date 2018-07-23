@@ -37,8 +37,19 @@ class Lexer {
     bool whitespace = true;
     while (whitespace && _pos < _program.length) {
       int c = _codeUnit(_pos);
-      if (!_isWhiteSpace(c)) whitespace = false;
-      else _pos++;
+      if (c == $open_parenthesis) {
+        _pos++;
+        // Comment.
+        while (_pos < _program.length) {
+          c = _codeUnit(_pos);
+          _pos++;
+          if (c == $close_parenthesis) break;
+        }
+      } else if (!_isWhiteSpace(c)) {
+        whitespace = false;
+      } else {
+        _pos++;
+      }
     }
     if (_pos == _program.length) {
       current = null;
