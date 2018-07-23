@@ -29,12 +29,18 @@ main() {
   demo("Billy says hello world!\n", ["Billy", "says", '"', "hello world!"]);
   demo("The world says hello back\n", ["the world", "says", '"', "hello back"]);
 
+  demo("Tommy was a lovestruck ladykiller", ["Tommy", "is", 100]);
+  demo("Sweet Lucy was a dancer", ["Sweet Lucy", "is", 16]);
+  demo("A killer is on the loose", ["a killer", "is", 235]);
+  demo("My dreams were ice. A life unfulfilled; wakin' everybody up, taking booze and pills",
+       ["my dreams", "is", 3.1415926535]);
+
   demo("If Tommy is nobody", ["if", "Tommy", "is", "null"]);
 
   demo("Listen to your heart", ["listen to", "your heart"]);
   demo("Say Tommy", ["say", "Tommy"]);
 
-  demo("Tommy was 16", ["Tommy", "is", 16]);
+  demo("Tommy was a dancer", ["Tommy", "is", 16]);
   demo("While Tommy ain't nothing", ["while", "Tommy", "is not", "null"]);
   demo("Knock Tommy down", ["knock", "Tommy", "down"]);
 
@@ -44,7 +50,7 @@ main() {
   demo("Multiply takes X and Y", ["Multiply", "takes", "X", "and", "Y"]);
   demo("Search takes Needle and Haystack", ["Search", "takes", "Needle", "and", "Haystack"]);
 
-  demo("Tommy was 14487.   (Initializes Tommy with 14487)", ["Tommy", "is", 14487]);
+  demo("Tommy was a lean mean wrecking machine.   (Initializes Tommy with 14487)", ["Tommy", "is", 14487]);
 
   demo("Continue\n    (blank like ending 'If' Block)\nIf Modulus taking Counter and Fizz is 0",
        ["continue", "\n", "if", "Modulus", "taking", "Counter", "and", "Fizz", "is", 0]);

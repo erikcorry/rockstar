@@ -66,7 +66,7 @@ class Lexer {
       return;
     }
     if (current == "says") {
-      getPoeticString();
+      _getPoeticString();
       return;
     }
     int c = _codeUnit(_pos);
@@ -88,7 +88,7 @@ class Lexer {
     }
   }
 
-  void getPoeticString() {
+  void _getPoeticString() {
     int start = _pos;
     while (true) {
       if (_pos == _program.length || _codeUnit(_pos) == $lf) {
@@ -125,6 +125,50 @@ class Lexer {
           again = false;
         }
         _pos++;
+      }
+    }
+  }
+
+  bool _isPoeticAlpha(int c) => ($a <= c && c <= $z) || ($A <= c && c <= $Z);
+
+  _getWordLength() {
+    int c = 0;
+    while (_pos < _program.length && _isPoeticAlpha(_codeUnit(_pos))) {
+      _pos++;
+      c++;
+    }
+    return c % 10;
+  }
+
+  void _getPoeticNumber() {
+    int r = 0;
+    int c = _getWordLength();
+    int divisor = 0;
+    while (true) {
+      r *= 10;
+      r += c;
+      divisor *= 10;
+      if (_pos == _program.length || _codeUnit(_pos) == $lf) {
+        current = r / (divisor == 0 ? 1 : divisor);
+        return;
+      }
+      bool again = true;
+      while (again) {
+        while (_pos != _program.length && _codeUnit(_pos) != $lf && (divisor != 0 || _codeUnit(_pos) != $dot) && _codeUnit(_pos) != $open_parenthesis && !_isPoeticAlpha(_codeUnit(_pos))) {
+          _pos++;
+        }
+        if (_pos == _program.length || _codeUnit(_pos) == $lf) {
+          current = r / (divisor == 0 ? 1 : divisor);
+          return;
+        } else if (_codeUnit(_pos) == $open_parenthesis) {
+          _pos++;
+          while (_pos != _program.length && _codeUnit(_pos) != $close_parenthesis) _pos++;
+        } else if (divisor == 0 && _codeUnit(_pos) == $dot) {
+          divisor = 1;
+        } else {
+          c = _getWordLength();
+          again = false;
+        }
       }
     }
   }
@@ -270,10 +314,14 @@ class Lexer {
       if (_isWhiteSpace(c)) {
         String so_far = _program.substring(start, _pos);
         String possessive = possessives[so_far];
-        if (possessive != null) {
+        // After "is" or one of its aliases we don't want to identify
+        // posessives (which are not real keywords).  This allows "Tommy was a
+        // lovestruck ladykiller" to work as a poetic numeric literal, and not
+        // a variable called "a lovestruck".
+        if (current != "is" && possessive != null) {
           get();
           if (current == '"') _error("Literal string after $possessive");
-          if (current is int) _error("Integer after $possessive");
+          if (current is num) _error("Integer after $possessive");
           if (_keywords.containsKey(current)) _error("Keyword after $possessive");
           int c = current.codeUnitAt(0);
           if ($A <= c && c <= $Z) _error("Proper name after $possessive");
@@ -292,6 +340,11 @@ class Lexer {
         }
         if (_keywords.containsKey(so_far)) {
           current = _keywords[so_far];
+          return;
+        }
+        if (current == "is") {
+          _pos = start;
+          _getPoeticNumber();
           return;
         }
         if (!proper || !_nextTokenStartsWithCapital()) {
