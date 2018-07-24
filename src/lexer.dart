@@ -1,5 +1,11 @@
 import "package:charcode/ascii.dart";
 
+const NOT_INITIALIZER = -1;
+const START_OF_LINE = 0;
+const AFTER_VARIABLE_NAME = 1;
+const AFTER_SAYS = 2;
+const AFTER_IS = 3;
+
 class Lexer {
   Lexer(this._program) {
     _initialize_first_words();
@@ -9,6 +15,9 @@ class Lexer {
   var current;
   String currentString;
   int _pos = 0;
+
+  int _poetic_state = START_OF_LINE;
+
   void accept(String something) {
     assert(current == something);
     get();
@@ -20,7 +29,15 @@ class Lexer {
     return answer;
   }
 
+  bool _isIdentifierChar(int c) {
+    if ($a <= c && c <= $z) return true;
+    if ($A <= c && c <= $Z) return true;
+    if (c == $single_quote) return true;
+    return false;
+  }
+
   bool _isWhiteSpace(int c) {
+    if (c == $comma) return false;
     if ($a <= c && c <= $z) return false;
     if ($A <= c && c <= $Z) return false;
     if (c == $single_quote) return false;
@@ -39,7 +56,11 @@ class Lexer {
     bool seen_blank_line = false;
     while (whitespace && _pos < _program.length) {
       int c = _codeUnit(_pos);
+      // Ignore commas at the end of a line.
+      bool ignorable_comma = c == $comma;
+      if (_pos + 1 < _program.length && _codeUnit(_pos + 1) != $lf) ignorable_comma = false;
       if (c == $lf) {
+        _poetic_state = START_OF_LINE;
         if (seen_newline) seen_blank_line = true;
         seen_newline = true;
       }
@@ -51,7 +72,7 @@ class Lexer {
           _pos++;
           if (c == $close_parenthesis) break;
         }
-      } else if (!_isWhiteSpace(c)) {
+      } else if (!_isWhiteSpace(c) && !ignorable_comma) {
         whitespace = false;
       } else {
         _pos++;
@@ -65,27 +86,44 @@ class Lexer {
       current = null;
       return;
     }
-    if (current == "says") {
+    if (_poetic_state == AFTER_SAYS) {
       _getPoeticString();
+      _poetic_state = NOT_INITIALIZER;
       return;
     }
     int c = _codeUnit(_pos);
     if (c == $double_quote) {
+      _poetic_state = NOT_INITIALIZER;
       getString();
+      return;
+    } else if (c == $comma) {
+      _poetic_state = NOT_INITIALIZER;
+      current = ",";
+      _pos++;
       return;
     } else if (c >= $A && c <= $Z) {
       getToken(true);
       // "Baby" doesn't change the meaning of a rock song, so get the next
       // token.
       if (current == "baby") get();
+      _updatePoeticState();
     } else if (c >= $0 && c <= $9) {
       getNumber();
+      _poetic_state = NOT_INITIALIZER;
     } else {
       getToken(false);
       // "Baby" doesn't change the meaning of a rock song, so get the next
       // token.
       if (current == "baby") get();
+      _updatePoeticState();
     }
+  }
+
+  void _updatePoeticState() {
+    if (_poetic_state == START_OF_LINE) _poetic_state = AFTER_VARIABLE_NAME;
+    else if (_poetic_state == AFTER_VARIABLE_NAME && current == "is") _poetic_state = AFTER_IS;
+    else if (_poetic_state == AFTER_VARIABLE_NAME && current == "says") _poetic_state = AFTER_SAYS;
+    else _poetic_state = NOT_INITIALIZER;
   }
 
   void _getPoeticString() {
@@ -191,10 +229,8 @@ class Lexer {
     "Baby": "baby",
     "takes": "takes",
     "and": "and",
-    "give": "give",
-    "Give": "give",
-    "back": "back",
-    "Back": "back",
+    "give back": "give back",
+    "Give back": "give back",
     "taking": "taking",
     "If": "if",
     "if": "if",
@@ -208,6 +244,8 @@ class Lexer {
     "break": "break",
     "Continue": "continue",
     "continue": "continue",
+    "Take it to the top": "continue",
+    "take it to the top": "continue",
     "Knock": "knock",
     "knock": "knock",
     "down": "down",
@@ -311,15 +349,20 @@ class Lexer {
     var chars = null;
     while (_pos < _program.length) {
       int c = _codeUnit(_pos);
-      if (_isWhiteSpace(c)) {
+      if (!_isIdentifierChar(c)) {
         String so_far = _program.substring(start, _pos);
         String possessive = possessives[so_far];
         // After "is" or one of its aliases we don't want to identify
-        // posessives (which are not real keywords).  This allows "Tommy was a
+        // possessives (which are not real keywords).  This allows "Tommy was a
         // lovestruck ladykiller" to work as a poetic numeric literal, and not
         // a variable called "a lovestruck".
-        if (current != "is" && possessive != null) {
+        if (_poetic_state != AFTER_IS && possessive != null) {
+          // TODO: This is pretty ugly!  The problem is we are reusing "get()"
+          // to get the second part of a posessive variable, which causes all
+          // sorts of trouble.  Make a specialized routine instead.
+          int temp = _poetic_state;
           get();
+          _poetic_state = temp;
           if (current == '"') _error("Literal string after $possessive");
           if (current is num) _error("Integer after $possessive");
           if (_keywords.containsKey(current)) _error("Keyword after $possessive");
@@ -331,7 +374,7 @@ class Lexer {
         if (_first_words.containsKey(so_far)) {
           for (String composite in _composite_keywords.keys) {
             if (composite.matchAsPrefix(_program, start) != null &&
-                (_program.length == start + composite.length || _isWhiteSpace(_codeUnit(start + composite.length)))) {
+                (_program.length == start + composite.length || !_isIdentifierChar(_codeUnit(start + composite.length)))) {
               current = _keywords[composite];
               _pos = start + composite.length;
               return;
@@ -342,7 +385,7 @@ class Lexer {
           current = _keywords[so_far];
           return;
         }
-        if (current == "is") {
+        if (_poetic_state == AFTER_IS) {
           _pos = start;
           _getPoeticNumber();
           return;
