@@ -95,7 +95,7 @@ Whisper my world
 """,
   [
     "Midnight", "takes", "your heart", "and", "your soul",
-    "while", "your heart", "is", "as great as", "your soul",
+    "while", "your heart", "is as great as", "your soul",
     "put", "your heart", "minus", "your soul", "into", "your heart",
     "\n",
 

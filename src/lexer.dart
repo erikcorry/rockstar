@@ -15,12 +15,21 @@ class Lexer {
   var current;
   String currentString;
   int _pos = 0;
+  int line_no = 1;
 
   int _poetic_state = START_OF_LINE;
 
-  void accept(String something) {
-    assert(current == something);
-    get();
+  bool accept(something) {
+    if (current == something) {
+      get();
+      return true;
+    }
+    return false;
+  }
+
+  void expect(something) {
+    if (current != something) error("Expected '$something', found '$current'");
+    getNext;
   }
 
   String get getNext {
@@ -37,7 +46,7 @@ class Lexer {
   }
 
   bool _isWhiteSpace(int c) {
-    if (c == $comma) return false;
+    //if (c == $comma) return false;
     if ($a <= c && c <= $z) return false;
     if ($A <= c && c <= $Z) return false;
     if (c == $single_quote) return false;
@@ -75,6 +84,7 @@ class Lexer {
       } else if (!_isWhiteSpace(c) && !ignorable_comma) {
         whitespace = false;
       } else {
+        if (c == $lf) line_no++;
         _pos++;
       }
     }
@@ -96,11 +106,11 @@ class Lexer {
       _poetic_state = NOT_INITIALIZER;
       getString();
       return;
-    } else if (c == $comma) {
-      _poetic_state = NOT_INITIALIZER;
-      current = ",";
-      _pos++;
-      return;
+    //} else if (c == $comma) {
+      //_poetic_state = NOT_INITIALIZER;
+      //current = ",";
+      //_pos++;
+      //return;
     } else if (c >= $A && c <= $Z) {
       getToken(true);
       // "Baby" doesn't change the meaning of a rock song, so get the next
@@ -147,15 +157,15 @@ class Lexer {
       r += c - $0;
       divisor *= 10;
       if (_pos == _program.length) {
-        current = r / (divisor == 0 ? 1 : divisor);
+        current = divisor == 0 ? r : r / divisor;
         return;
       }
       bool again = true;
       while (again) {
         c = _codeUnit(_pos);
         if (c < $0 || c > $9) {
-          if (c != $dot || divisor != 0) {
-            current = r / (divisor == 0 ? 1 : divisor);
+          if (c != $dot) {
+            current = divisor == 0 ? r : r / divisor;
             return;
           }
           divisor = 1;
@@ -187,7 +197,7 @@ class Lexer {
       r += c;
       divisor *= 10;
       if (_pos == _program.length || _codeUnit(_pos) == $lf) {
-        current = r / (divisor == 0 ? 1 : divisor);
+        current = divisor == 0 ? r : r / divisor;
         return;
       }
       bool again = true;
@@ -196,7 +206,7 @@ class Lexer {
           _pos++;
         }
         if (_pos == _program.length || _codeUnit(_pos) == $lf) {
-          current = r / (divisor == 0 ? 1 : divisor);
+          current = divisor == 0 ? r : r / divisor;
           return;
         } else if (_codeUnit(_pos) == $open_parenthesis) {
           _pos++;
@@ -287,22 +297,22 @@ class Lexer {
     "is": "is",
     "was": "is",
     "were": "is",
-    "higher than": "greater than",
-    "greater than": "greater than",
-    "bigger than": "greater than",
-    "stronger than": "greater than",
-    "lower than": "less than",
-    "less than": "less than",
-    "smaller than": "less than",
-    "weaker than": "less than",
-    "as high as": "as great as",
-    "as great as": "as great as",
-    "as big as": "as great as",
-    "as strong as": "as great as",
-    "as low as": "as low as",
-    "as little as": "as low as",
-    "as small as": "as low as",
-    "as weak as": "as low as",
+    "is higher than": "is greater than",
+    "is greater than": "is greater than",
+    "is bigger than": "is greater than",
+    "is stronger than": "is greater than",
+    "is lower than": "is less than",
+    "is less than": "is less than",
+    "is smaller than": "is less than",
+    "is weaker than": "is less than",
+    "is as high as": "is as great as",
+    "is as great as": "is as great as",
+    "is as big as": "is as great as",
+    "is as strong as": "is as great as",
+    "is as low as": "is as low as",
+    "is as little as": "is as low as",
+    "is as small as": "is as low as",
+    "is as weak as": "is as low as",
     "is not": "is not",
     "ain't": "is not",
     "listen": "listen",
@@ -335,7 +345,7 @@ class Lexer {
     int p = _pos;
     while (p < _program.length) {
       int c = _codeUnit(p);
-      if (_isWhiteSpace(c)) {
+      if (_isWhiteSpace(c) && c != $lf) {
         p++;
         continue;
       }
@@ -363,11 +373,11 @@ class Lexer {
           int temp = _poetic_state;
           get();
           _poetic_state = temp;
-          if (current == '"') _error("Literal string after $possessive");
-          if (current is num) _error("Integer after $possessive");
-          if (_keywords.containsKey(current)) _error("Keyword after $possessive");
+          if (current == '"') error("Literal string after $possessive");
+          if (current is num) error("Integer after $possessive");
+          if (_keywords.containsKey(current)) error("Keyword after $possessive");
           int c = current.codeUnitAt(0);
-          if ($A <= c && c <= $Z) _error("Proper name after $possessive");
+          if ($A <= c && c <= $Z) error("Proper name after $possessive");
           current = "$possessive $current";
           return;
         }
@@ -432,7 +442,7 @@ class Lexer {
       int c = _codeUnit(_pos);
       if (c == $backslash) {
         _pos += 2;
-        if (_pos > _program.length) _error("File ends in backslash");
+        if (_pos > _program.length) error("File ends in backslash");
         chars = _makeCharArray(start, _pos, chars);
         c = _codeUnit(_pos - 1);
         if (c == $n) chars.add($lf);
@@ -441,7 +451,7 @@ class Lexer {
         else if (c == $backslash) chars.add($backslash);
         else if (c == $double_quote) chars.add($double_quote);
         else if (c == $0) chars.add(0);
-        else _error("Unknown escape in string literal");
+        else error("Unknown escape in string literal");
         continue;
       }
       if (c == $double_quote) {
@@ -458,12 +468,11 @@ class Lexer {
       _pos++;
     }
     _pos = start;
-    _error("Unterminated string");
+    error("Unterminated string");
   }
 
-  void _error(String message) {
-    String str = "Error at byte postion $_pos: $message";
-    print(str);
+  void error(String message) {
+    String str = "Error on line $line_no at byte postion $_pos: $message";
     throw str;
   }
 }
