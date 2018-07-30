@@ -55,7 +55,7 @@ main() {
   demo("Continue\n    (blank like ending 'If' Block)\nIf Modulus taking Counter and Fizz is 0",
        ["continue", "\n", "if", "Modulus", "taking", "Counter", "and", "Fizz", "is", 0]);
 
-  demo("I love you (and that's the truth), but I'm gonna leave you", ["I", "love", "you", ",", "but", "I'm", "gonna", "leave", "you"]);
+  demo("I love you (and that's the truth), but I'm gonna leave you", ["I", "love", "you", "but", "I'm", "gonna", "leave", "you"]);
 
   demo("Line\nline", ["Line", "line"]);
   demo("Line\n\nline", ["Line", "\n", "line"]);
@@ -108,17 +108,17 @@ Whisper my world
     "Hate", "is", 5,
     "until", "my world", "is", "Desire",
     "build", "my world", "up",
-    "if", "Midnight", "taking", "my world", ",", "Fire", "is", "null", "and", "Midnight", "taking", "my world", ",", "Hate", "is", "null",
+    "if", "Midnight", "taking", "my world", "Fire", "is", "null", "and", "Midnight", "taking", "my world", "Hate", "is", "null",
     "say", '"', "FizzBuzz!",
     "continue",
     "\n",
 
-    "if", "Midnight", "taking", "my world", ",", "Fire", "is", "null",
+    "if", "Midnight", "taking", "my world", "Fire", "is", "null",
     "say", '"', "Fizz!",
     "continue",
     "\n",
 
-    "if", "Midnight", "taking", "my world", ",", "Hate", "is", "null",
+    "if", "Midnight", "taking", "my world", "Hate", "is", "null",
     "say", '"', "Buzz!",
     "continue",
     "\n",
